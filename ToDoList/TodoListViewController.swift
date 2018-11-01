@@ -11,11 +11,16 @@ import UIKit
 class TodoListViewController: UITableViewController
 {
     
+    let defaults = UserDefaults.standard
+    
     var itemArray = ["Takım elbise al", "Her sabah dişlerini fırçala","Sürekli birşeyler üretmek için uğraş"]
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -48,9 +53,16 @@ class TodoListViewController: UITableViewController
     @IBAction func ekle(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
+        
         let alert = UIAlertController(title: "Yeni not", message: "", preferredStyle: .alert)
+        
         let action = UIAlertAction(title: "Ekle", style: .default) { (action) in
+            
+            
             self.itemArray.append(textField.text!)
+            
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            
             self.tableView.reloadData()
         }
         alert.addTextField { (alertTextField) in
@@ -58,6 +70,7 @@ class TodoListViewController: UITableViewController
             textField = alertTextField
         }
         alert.addAction(action)
+        
         present(alert, animated: true, completion: nil)
     }
     
