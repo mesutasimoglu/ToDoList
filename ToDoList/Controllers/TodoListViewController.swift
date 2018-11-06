@@ -11,29 +11,21 @@ import UIKit
 class TodoListViewController: UITableViewController
 {
     
-    let defaults = UserDefaults.standard
-    
+      let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Not.plist")
     var itemArray = [Item()]
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem1 = Item()
-        newItem1.tittle = "Mesut"
-        itemArray.append(newItem1)
+        print(dataFilePath)
+     
+    itemArray.remove(at: 0)
         
-        let newItem2 = Item()
-        newItem2.tittle = "Yılmaz"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.tittle = "Cok iyi"
-        itemArray.append(newItem3)
-        itemArray.remove(at: 0)
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+    /*  if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
             itemArray = items
-        }
+        } */
+        
+        loadItems()
 
     
     }
@@ -75,11 +67,36 @@ class TodoListViewController: UITableViewController
         }else{
             itemArray[indexPath.row].done = false
         }*/
+        self.saveItems()
+        
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
     //Mark- Yeni birşeyler ekle
+     func saveItems() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(self.itemArray)
+            try data.write(to: self.dataFilePath!)
+        }catch {
+            print(error)
+        }
+    }
+    
+    func loadItems() {
+        
+        if  let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
     @IBAction func ekle(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
@@ -93,7 +110,7 @@ class TodoListViewController: UITableViewController
             newItem.tittle = textField.text!
             self.itemArray.append(newItem)
             
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            self.saveItems()
             
             self.tableView.reloadData()
         }
